@@ -1,0 +1,101 @@
+source_page,source_table,Item Name,Count,Amount
+1,1,Beef Tossed Ramen,468.00,"6,921.26"
+1,1,Beef Ramen,339.00,"5,045.65"
+1,1,Lunch Special,269.00,"3,783.26"
+1,1,Pork Tossed Ramen,260.00,"3,526.47"
+1,1,Chicken Rice Noodle Soup,233.00,"3,303.84"
+1,1,Chicken Ramen,222.00,"3,313.00"
+1,1,Mai Special Fried Chicken(8),309.00,"3,089.87"
+1,1,Beef Tossed Rice Noodle,195.00,"3,102.44"
+1,1,Chicken Tossed Ramen,200.00,"2,906.30"
+1,1,Beef Rice Noodle Soup,147.00,"2,316.04"
+1,1,Pork Ramen,131.00,"1,845.21"
+1,1,Chicken Tossed Rice Noodles,118.00,"1,726.89"
+1,1,House Ramen,91.00,"1,474.52"
+1,1,Mai's Golden Flake Fried Chicken(8),138.00,"1,378.05"
+1,1,Fried Pork Dumplings(10),119.00,"1,063.71"
+1,1,Pork Tossed Rice Noodle,72.00,992.70
+2,1,Golden Coconut Crunch Chicken(8),96.00,982.35
+2,1,Pork Rice Noodle Soup,72.00,986.46
+2,1,Chicken Fried Rice,80.00,"1,000.10"
+2,1,Mai OG Fried Chicken Wings(4),193.00,960.71
+2,1,Brown Sugar Milk Tea w. Boba (24oz),196.00,888.71
+2,1,Steam Pork Dumplings(10),94.00,819.22
+2,1,Crispy Spring Roll(3),185.00,726.44
+2,1,House Rice Noodle Soup,42.00,684.02
+2,1,House Fried Rice,46.00,692.23
+2,1,Tempura Shrimp(3),138.00,674.01
+2,1,Crispy Pork Egg Roll(3),162.00,651.24
+2,1,Onion Glory Fried Chicken(8),59.00,589.13
+2,1,Strawberry Sunrise Tea,152.00,555.16
+2,1,Sichuan Chili Wontons,50.00,546.94
+2,1,Vegetable Ramen,33.00,440.00
+2,1,Vegetable Rice Noodle Soup,30.00,408.55
+2,1,Citrus Honey Fried Chicken  (8),43.00,434.87
+2,1,Beef Fried Rice,28.00,377.50
+2,1,Shrimp Fried Rice,29.00,389.91
+2,1,Mai Buffalo Chicken Wings(8),35.00,346.69
+2,1,Golden kiwi,87.00,316.02
+2,1,Dr. Pepper,118.00,344.71
+3,1,Cream Cheese Wonton（6）,60.00,352.83
+3,1,Specialty Drink,115.00,338.50
+3,1,Diet Pepsi,97.00,284.98
+3,1,Spicy Cucumber Salad,46.00,249.14
+3,1,Pepsi,83.00,238.52
+3,1,Cream Cheese Rangoon(6),47.00,263.68
+3,1,Pork Fried Rice,17.00,213.55
+3,1,Sweet Ice Tea,79.00,228.04
+3,1,Unsweet Ice Tea,69.00,197.17
+3,1,Crispy French Fries,47.00,184.56
+3,1,BF chicken cutlet combo,20.00,242.53
+3,1,Wasabi Spiced Fried Chicken (8),16.00,158.84
+3,1,Tangy Honey Mustard Fried Chicken (8),19.00,186.57
+3,1,Vegetable Fried Rice,14.00,177.00
+3,1,Milk Tea(20oz),31.00,153.81
+3,1,Vegetable Tossed Ramen,11.00,153.95
+3,1,Wasabi Spiced Fried Chicken(8),12.00,138.88
+3,1,Tangy Honey Mustard Fried Chicken(8),11.00,129.49
+3,1,Chili Pepper Fried Chicken（8）,13.00,129.11
+3,1,Starry - Sprite,45.00,132.29
+3,1,Braised Chicken Thigh,36.00,106.77
+3,1,Vegetable Tossed Rice Noodle,9.00,114.96
+4,1,Brown Sugar Rice Cake,22.00,117.14
+4,1,Lemonade,35.00,100.73
+4,1,Jumbo Chicken Tender (3),19.00,90.93
+4,1,House Tossed Rice Noodle,4.00,63.16
+4,1,Chili Pepper Fried Chicken (8),6.00,62.94
+4,1,Brown Sugar Milk Tea NO BOBA (24oz),17.00,66.20
+4,1,White Rice - DINE IN,52.00,52.44
+4,1,Bottled Soda,21.00,42.19
+4,1,Hot Tea,13.00,38.39
+4,1,Crispy French Fries(LG),8.00,33.92
+4,1,BF chicken cutlet,10.00,65.93
+4,1,Plain Fried Rice,15.00,45.49
+4,1,Orange Crush,10.00,29.74
+4,1,Rice Noodle,17.00,25.80
+4,1,White Rice-To Go,6.00,21.00
+4,1,Sweet Sesame Ball,5.00,25.02
+4,1,White Rice,5.00,20.16
+4,1,House Tossed Ramen,2.00,31.44
+4,1,Ramune - Original,4.00,13.76
+4,1,Chunked Beef,4.00,15.96
+4,1,Braised Chicken,5.00,16.90
+4,1,soup to go,7.00,10.47
+5,1,Ramen,6.00,9.00
+5,1,Mai‘s Special Sauce,11.00,10.72
+5,1,北冰洋 Orange Soda,2.00,7.18
+5,1,Pepsi Zero,2.00,7.18
+5,1,Sweet Tea,2.00,7.18
+5,1,Braised Pork,3.00,9.22
+5,1,Shrimp,2.00,5.98
+5,1,Bottled Water,3.00,5.97
+5,1,Open Food,2.00,4.52
+5,1,Braised Egg,2.00,4.30
+5,1,Mai‘s special Sauce,4.00,4.26
+5,1,Ramune - Orange,1.00,3.59
+5,1,Starry,1.00,3.59
+5,1,Ramune - Melon,1.00,2.99
+5,1,Ramune - Strawberry,2.00,6.28
+5,1,Water,"2,122.00",0.00
+5,1,Sweet Sesame Ball (6) w. red bean,1.00,4.50
+5,1,Golden kiwi,5.00,18.38
