@@ -34,12 +34,7 @@ shipments['Monthly Quantity (g)'] = shipments['Quantity per shipment'] * shipmen
 lbs_mask = shipments['Unit of shipment'].str.lower().str.strip() == 'lbs'
 shipments.loc[lbs_mask, 'Monthly Quantity (g)'] = shipments.loc[lbs_mask, 'Monthly Quantity (g)'] * 453.59237
 
-# print("\nShipment Summary:")
-# print(shipments[['Ingredient', 'Monthly Quantity (g)', 'Unit of shipment']])
-
 ######################################## find monthly ingredient usage ########################################
-# print("\nCombining monthly sales files...")
-
 # combine all monthly data into one dataframe
 monthlySalesFiles = glob.glob('csv_files/*.csv')
 dfs = []
@@ -88,20 +83,13 @@ for col in ingredientCols:
 for col in ingredientCols:
     usage[col] = usage[col] * usage['Count']
 
-# print(f"✓ Calculated usage for {len(ingredientCols)} ingredient types")
 
 ######################################## find total ingredient usage ########################################
-# print("\nAggregating monthly usage...")
 
 # sum usage by month name 
 monthlyUsage = usage.groupby('month')[ingredientCols].sum()
 
 avgMonthlyUsage = monthlyUsage.mean(axis=0)
-
-# print("\nAverage Monthly Usage:")
-# for ingredient, amount in avgMonthlyUsage.items():
-#     if amount > 0:
-#         print(f"  {ingredient}: {amount:.2f}")
 
 ######################################## compare usage vs supply ########################################
 # print("\nComparing supply vs usage...")
@@ -169,20 +157,7 @@ print("="*80)
 print(comparison.to_string(index=False))
 
 ######################################## visualizations ########################################
-print("\nGenerating visualizations...")
-
-# Figure 1: Shipment Frequency Distribution
-plt.figure(figsize=(10, 6))
-sns.countplot(data=shipments, x='frequency', order=['weekly', 'biweekly', 'monthly'])
-plt.title('Shipment Frequency Distribution', fontsize=16, fontweight='bold')
-plt.xlabel('Frequency', fontsize=12)
-plt.ylabel('Number of Ingredients', fontsize=12)
-plt.tight_layout()
-plt.savefig('shipment_frequency.png', dpi=300, bbox_inches='tight')
-print("✓ Saved: shipment_frequency.png")
-plt.show()
-
-# Figure 2: Monthly Supply by Ingredient
+# Figure 1: Monthly Supply by Ingredient
 plt.figure(figsize=(12, 8))
 shipments_sorted = shipments.sort_values('Monthly Quantity (g)', ascending=True)
 sns.barplot(data=shipments_sorted, y='Ingredient', x='Monthly Quantity (g)', palette='viridis')
@@ -194,7 +169,7 @@ plt.savefig('monthlySupply.png', dpi=300, bbox_inches='tight')
 print("✓ Saved: monthlySupply.png")
 plt.show()
 
-# Figure 3: Supply vs Usage Gap Analysis
+# Figure 2: Supply vs Usage Gap Analysis
 plt.figure(figsize=(12, 8))
 comparison_sorted = comparison.sort_values('Difference', ascending=True)
 colors = ['red' if x < 0 else 'green' for x in comparison_sorted['Difference']]
@@ -208,10 +183,10 @@ plt.savefig('supply_gap.png', dpi=300, bbox_inches='tight')
 print("✓ Saved: supply_gap.png")
 plt.show()
 
-# Figure 4: Utilization Rate
+# Figure 3: Utilization Rate
 plt.figure(figsize=(12, 8))
 comparison_sorted = comparison.sort_values('Utilization_%', ascending=False)
-colors_util = ['red' if x > 90 else 'orange' if x > 70 else 'green' for x in comparison_sorted['Utilization_%']]
+colors_util = ['red' if x > 90 else 'orange' if x > 50 else 'green' for x in comparison_sorted['Utilization_%']]
 sns.barplot(data=comparison_sorted, y='Ingredient', x='Utilization_%', palette=colors_util)
 plt.axvline(100, color='red', linestyle='--', linewidth=2, label='100% Utilization')
 plt.title('Ingredient Utilization Rate', fontsize=16, fontweight='bold')
@@ -223,9 +198,7 @@ plt.savefig('utilization_rate.png', dpi=300, bbox_inches='tight')
 print("✓ Saved: utilization_rate.png")
 plt.show()
 
-# ============================================
-# 10. KEY INSIGHTS
-# ============================================
+######################################## summary of data ########################################
 print("\n" + "="*80)
 print("KEY INSIGHTS")
 print("="*80)
