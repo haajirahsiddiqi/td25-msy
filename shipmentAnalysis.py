@@ -158,7 +158,7 @@ print(comparison.to_string(index=False))
 
 ######################################## visualizations ########################################
 # Figure 1: Monthly Supply by Ingredient
-plt.figure(figsize=(12, 8))
+plt.figure(figsize=(20, 8))
 shipments_sorted = shipments.sort_values('Monthly Quantity (g)', ascending=True)
 sns.barplot(data=shipments_sorted, y='Ingredient', x='Monthly Quantity (g)', palette='viridis')
 plt.title('Estimated Monthly Supply per Ingredient', fontsize=16, fontweight='bold')
@@ -170,7 +170,7 @@ print("✓ Saved: monthlySupply.png")
 plt.show()
 
 # Figure 2: Supply vs Usage Gap Analysis
-plt.figure(figsize=(12, 8))
+plt.figure(figsize=(20, 8))
 comparison_sorted = comparison.sort_values('Difference', ascending=True)
 colors = ['red' if x < 0 else 'green' for x in comparison_sorted['Difference']]
 sns.barplot(data=comparison_sorted, y='Ingredient', x='Difference', palette=colors)
@@ -184,7 +184,7 @@ print("✓ Saved: supply_gap.png")
 plt.show()
 
 # Figure 3: Utilization Rate
-plt.figure(figsize=(12, 8))
+plt.figure(figsize=(20, 8))
 comparison_sorted = comparison.sort_values('Utilization_%', ascending=False)
 colors_util = ['red' if x > 90 else 'orange' if x > 50 else 'green' for x in comparison_sorted['Utilization_%']]
 sns.barplot(data=comparison_sorted, y='Ingredient', x='Utilization_%', palette=colors_util)
