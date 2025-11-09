@@ -124,6 +124,8 @@ elif page == "Shipment Analysis":
             return np.nan
     
     # Process shipment data
+    shipments['Number of shipments'] = pd.to_numeric(shipments['Number of shipments'], errors='coerce').fillna(0)
+    shipments['Quantity per shipment'] = pd.to_numeric(shipments['Quantity per shipment'], errors='coerce').fillna(0)
     shipments['Shipments per Month'] = shipments['frequency'].apply(monthlyFreq) * shipments['Number of shipments']
     shipments['Monthly Quantity (g)'] = shipments['Quantity per shipment'] * shipments['Shipments per Month']
     
@@ -131,33 +133,223 @@ elif page == "Shipment Analysis":
     lbs_mask = shipments['Unit of shipment'].str.lower().str.strip() == 'lbs'
     shipments.loc[lbs_mask, 'Monthly Quantity (g)'] = shipments.loc[lbs_mask, 'Monthly Quantity (g)'] * 453.59237
     
+    # Calculate average monthly usage
+    merged = pd.merge(ingredients, sales_data, left_on='Item name', right_on='Item Name', how='right')
+    ingredient_cols = [col for col in ingredients.columns if col != 'Item name']
+    
+    # Calculate monthly usage
+    for col in ingredient_cols:
+        merged[col] = pd.to_numeric(merged[col], errors='coerce').fillna(0)
+    merged['Count'] = pd.to_numeric(merged['Count'], errors='coerce').fillna(0)
+    
+    for col in ingredient_cols:
+        merged[f'{col}_total'] = merged[col] * merged['Count']
+    
+    monthly_usage = merged.groupby('Month')[[f'{col}_total' for col in ingredient_cols]].sum()
+    avg_monthly_usage = monthly_usage.mean(axis=0)
+    
+    # Map ingredient names
+    ingredient_name_map = {
+        'Beef': 'braised beef used (g)',
+        'Chicken': 'Braised Chicken(g)',
+        'Ramen': 'Ramen (count)',
+        'Rice Noodles': 'Rice Noodles(g)',
+        'Flour': 'flour (g)',
+        'Rice': 'Rice(g)',
+        'Green Onion': 'Green Onion',
+        'White Onion': 'White onion',
+        'Cilantro': 'Cilantro',
+        'Egg': 'Egg(count)',
+        'Peas + Carrot': 'Peas(g)',
+        'Bokchoy': 'Boychoy(g)',
+        'Chicken Wings': 'Chicken Wings (pcs)'
+    }
+    
+    # Build comparison data
+    comparisonData = []
+    for idx, row in shipments.iterrows():
+        ingredientName = row['Ingredient']
+        monthlySupply = row['Monthly Quantity (g)']
+        
+        usageCol = ingredient_name_map.get(ingredientName)
+        if usageCol and usageCol in avg_monthly_usage.index:
+            avgUsage = avg_monthly_usage[usageCol]
+        else:
+            avgUsage = 0
+        
+        if avgUsage > 0:
+            utilization = (avgUsage / monthlySupply) * 100 if monthlySupply > 0 else 0
+            daysOfSupply = (monthlySupply / (avgUsage / 30)) if avgUsage > 0 else 999
+        else:
+            utilization = 0
+            daysOfSupply = 999
+        
+        comparisonData.append({
+            'Ingredient': ingredientName,
+            'monthlySupply': monthlySupply,
+            'Avg_Monthly_Usage': avgUsage,
+            'Difference': monthlySupply - avgUsage,
+            'Utilization_%': utilization,
+            'daysOfSupply': daysOfSupply
+        })
+    
+    comparison = pd.DataFrame(comparisonData)
+    
     # Create tabs for different analyses
-    tab1, tab2, tab3 = st.tabs(["Supply Analysis", "Usage Trends", "Insights"])
+    tab1, tab2, tab3 = st.tabs(["Monthly Supply", "Supply Gap", "Utilization Rate"])
     
     with tab1:
         st.subheader("Monthly Supply by Ingredient")
+        shipments_sorted = shipments.sort_values('Monthly Quantity (g)', ascending=True)
         fig = px.bar(
-            shipments.sort_values('Monthly Quantity (g)', ascending=True),
+            shipments_sorted,
             y='Ingredient',
             x='Monthly Quantity (g)',
-            title='Estimated Monthly Supply per Ingredient'
+            title='Estimated Monthly Supply per Ingredient',
+            color_continuous_scale='viridis'
         )
-        st.plotly_chart(fig, use_container_width=True)
+        fig.update_layout(
+            title_font=dict(size=16, weight='bold'),
+            xaxis_title_font=dict(size=12),
+            yaxis_title_font=dict(size=12)
+        )
+        st.plotly_chart(fig, width='stretch')
     
     with tab2:
-        st.subheader("Shipment Frequency Distribution")
-        freq_data = shipments['frequency'].value_counts()
-        fig = px.pie(
-            values=freq_data.values,
-            names=freq_data.index,
-            title='Distribution of Shipment Frequencies'
+        st.subheader("Supply Gap Analysis")
+        comparison_sorted = comparison.sort_values('Difference', ascending=True)
+        colors = ['red' if x < 0 else 'green' for x in comparison_sorted['Difference']]
+        fig = px.bar(
+            comparison_sorted,
+            y='Ingredient',
+            x='Difference',
+            title='Supply Gap Analysis (Negative = Shortage Risk)',
+            color='Difference',
+            color_continuous_scale=['red', 'green'],
         )
-        st.plotly_chart(fig, use_container_width=True)
+        fig.add_vline(x=0, line_dash="dash", line_color="black", line_width=2)
+        fig.update_layout(
+            title_font=dict(size=16, weight='bold'),
+            xaxis_title_font=dict(size=12),
+            yaxis_title_font=dict(size=12)
+        )
+        st.plotly_chart(fig, width='stretch')
+    
+    # Calculate average monthly usage
+    merged = pd.merge(
+        ingredients,
+        sales_data,
+        left_on='Item name',
+        right_on='Item Name',
+        how='right'
+    )
+    
+    # Calculate ingredient usage
+    ingredient_cols = [col for col in ingredients.columns if col != 'Item name']
+    for col in ingredient_cols:
+        merged[col] = pd.to_numeric(merged[col], errors='coerce').fillna(0)
+    merged['Count'] = pd.to_numeric(merged['Count'], errors='coerce').fillna(0)
+    
+    # Calculate monthly usage
+    for col in ingredient_cols:
+        merged[f'{col}_total'] = merged[col] * merged['Count']
+    
+    # Calculate average monthly usage per ingredient
+    monthly_usage = merged.groupby('Month')[[f'{col}_total' for col in ingredient_cols]].sum()
+    avg_monthly_usage = monthly_usage.mean(axis=0)
+    
+    # Calculate supply status
+    def calculate_status(supply, usage):
+        if usage == 0:
+            return 'NO USAGE'
+        days_of_supply = (supply / (usage / 30)) if usage > 0 else 999
+        if days_of_supply < 5:
+            return 'CRITICAL'
+        elif days_of_supply < 10:
+            return 'LOW'
+        elif days_of_supply < 45:
+            return 'GOOD'
+        else:
+            return 'OVERSTOCKED'
+    
+    # Map ingredient names
+    ingredient_name_map = {
+        'Beef': 'braised beef used (g)',
+        'Chicken': 'Braised Chicken(g)',
+        'Ramen': 'Ramen (count)',
+        'Rice Noodles': 'Rice Noodles(g)',
+        'Flour': 'flour (g)',
+        'Rice': 'Rice(g)',
+        'Green Onion': 'Green Onion',
+        'White Onion': 'White onion',
+        'Cilantro': 'Cilantro',
+        'Egg': 'Egg(count)',
+        'Peas + Carrot': 'Peas(g)',
+        'Bokchoy': 'Boychoy(g)',
+        'Chicken Wings': 'Chicken Wings (pcs)'
+    }
+    
+    # Calculate status for each ingredient
+    status_list = []
+    for idx, row in shipments.iterrows():
+        ingredient_name = row['Ingredient']
+        monthly_supply = row['Monthly Quantity (g)']
+        
+        usage_col = ingredient_name_map.get(ingredient_name)
+        if usage_col and usage_col in avg_monthly_usage.index:
+            avg_usage = avg_monthly_usage[usage_col]
+        else:
+            avg_usage = 0
+        
+        status = calculate_status(monthly_supply, avg_usage)
+        status_list.append(status)
+    
+    shipments['Status'] = status_list
     
     with tab3:
-        st.subheader("Supply Status")
-        status_data = shipments['Status'].value_counts()
+        st.subheader("Utilization Rate")
+        comparison_sorted = comparison.sort_values('Utilization_%', ascending=False)
         
+        # Create color scale similar to the original
+        colors = ['red' if x > 90 else 'orange' if x > 50 else 'green' for x in comparison_sorted['Utilization_%']]
+        
+        fig = px.bar(
+            comparison_sorted,
+            y='Ingredient',
+            x='Utilization_%',
+            title='Ingredient Utilization Rate',
+            color='Utilization_%',
+            color_continuous_scale=['green', 'orange', 'red']
+        )
+        
+        fig.add_vline(x=100, line_dash="dash", line_color="red", line_width=2)
+        fig.update_layout(
+            title_font=dict(size=16, weight='bold'),
+            xaxis_title_font=dict(size=12),
+            yaxis_title_font=dict(size=12)
+        )
+        st.plotly_chart(fig, width='stretch')
+        status_data = pd.DataFrame(shipments['Status'].value_counts()).reset_index()
+        status_data.columns = ['Status', 'Count']
+        
+        # Create a pie chart for status distribution
+        fig = px.pie(
+            status_data,
+            values='Count',
+            names='Status',
+            title='Ingredient Supply Status Distribution',
+            color='Status',
+            color_discrete_map={
+                'CRITICAL': 'red',
+                'LOW': 'orange',
+                'GOOD': 'green',
+                'OVERSTOCKED': 'blue',
+                'NO USAGE': 'gray'
+            }
+        )
+        st.plotly_chart(fig, use_container_width=True)
+        
+        # Display metrics
         col1, col2, col3, col4 = st.columns(4)
         with col1:
             st.metric("Critical Items", len(shipments[shipments['Status'] == 'CRITICAL']))
@@ -167,71 +359,82 @@ elif page == "Shipment Analysis":
             st.metric("Good Stock", len(shipments[shipments['Status'] == 'GOOD']))
         with col4:
             st.metric("Overstocked", len(shipments[shipments['Status'] == 'OVERSTOCKED']))
+        
+        # Display detailed status table
+        st.subheader("Detailed Status by Ingredient")
+        status_table = shipments[['Ingredient', 'Monthly Quantity (g)', 'Status']]
+        st.dataframe(status_table, use_container_width=True)
 
 elif page == "Sales Analysis":
     st.title("Sales Analysis Dashboard")
     
-    # Clean and prepare sales data
-    sales_data['Count'] = pd.to_numeric(sales_data['Count'].replace(',', '', regex=True))
-    sales_data['Amount'] = pd.to_numeric(sales_data['Amount'].astype(str).str.replace(',', ''))
+    # Load and process monthly data exactly as in items_most_bought.py
+    may = pd.read_csv('csv_files/may.csv')
+    jun = pd.read_csv('csv_files/june.csv')
+    jul = pd.read_csv('csv_files/july.csv')
+    aug = pd.read_csv('csv_files/august.csv')
+    sep = pd.read_csv('csv_files/september.csv')
+    oct = pd.read_csv('csv_files/october.csv')
+    
+    # Drop unnecessary columns
+    for df in [may, jun, jul, aug, sep, oct]:
+        df.drop(['source_page', 'source_table'], axis=1, inplace=True)
+    
+    # Combine all months
+    months_df = pd.concat([may, jun, jul, aug, sep, oct], axis=0)
+    months_df['Count'] = months_df['Count'].replace(',', '', regex=True).astype(float)
+    months_df['Amount'] = months_df['Amount'].replace(',', '', regex=True).astype(float)
+    months_df['Item Name'] = months_df['Item Name'].replace(' ', '\n', regex=True)
     
     # Create summary dataframes
-    summary_amount = (
-        sales_data
-        .groupby('Item Name')
+    summary_amount_df = (
+        months_df
+        .groupby('Item Name', as_index=False)
         .agg({'Count': 'sum', 'Amount': 'sum'})
         .sort_values('Amount', ascending=False)
     )
     
+    summary_count_df = summary_amount_df.copy()
+    summary_count_df = summary_count_df[summary_count_df['Amount'] != 0]
+    
+    # Get top 20
+    t20_spending = summary_amount_df.head(20)
+    t20_count = summary_count_df.sort_values('Count', ascending=False).head(20)
+    
     tab1, tab2 = st.tabs(["Revenue Analysis", "Sales Count Analysis"])
     
     with tab1:
-        st.subheader("Top Items by Revenue")
-        top_revenue = summary_amount.nlargest(20, 'Amount')
+        st.subheader("All Time Spending for Top 20 Items")
         fig = px.bar(
-            top_revenue,
+            t20_spending,
             y='Amount',
-            title='Top 20 Items by Revenue',
-            labels={'Amount': 'Total Revenue ($)'}
+            x='Item Name',
+            title='All Time Spending for Top 20 Items',
+            labels={'Amount': 'Total Spending ($)', 'Item Name': 'Item Name'},
+            color_discrete_sequence=['orange'] * len(t20_spending)
         )
-        st.plotly_chart(fig, use_container_width=True)
+        fig.update_layout(
+            xaxis_tickangle=45,
+            title_font=dict(size=16, weight='bold'),
+            xaxis_title_font=dict(size=12, weight='bold'),
+            yaxis_title_font=dict(size=12, weight='bold')
+        )
+        st.plotly_chart(fig, width='stretch')
     
     with tab2:
-        st.subheader("Top Items by Quantity Sold")
-        top_count = summary_amount.nlargest(20, 'Count')
+        st.subheader("All Time Count Sold for Top 20 Items")
         fig = px.bar(
-            top_count,
+            t20_count,
             y='Count',
-            title='Top 20 Items by Quantity Sold',
-            labels={'Count': 'Total Units Sold'}
+            x='Item Name',
+            title='All Time Count Sold for Top 20 Items',
+            labels={'Count': 'Total Count', 'Item Name': 'Item Name'},
+            color_discrete_sequence=['purple'] * len(t20_count)
         )
-        st.plotly_chart(fig, use_container_width=True)
-    
-    # Monthly trends
-    st.subheader("Monthly Sales Trends")
-    monthly_totals = sales_data.groupby('Month').agg({
-        'Amount': 'sum',
-        'Count': 'sum'
-    }).reset_index()
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        fig = px.line(
-            monthly_totals,
-            x='Month',
-            y='Amount',
-            title='Monthly Revenue Trend',
-            labels={'Amount': 'Total Revenue ($)'}
+        fig.update_layout(
+            xaxis_tickangle=45,
+            title_font=dict(size=16, weight='bold'),
+            xaxis_title_font=dict(size=12, weight='bold'),
+            yaxis_title_font=dict(size=12, weight='bold')
         )
-        st.plotly_chart(fig)
-    
-    with col2:
-        fig = px.line(
-            monthly_totals,
-            x='Month',
-            y='Count',
-            title='Monthly Sales Volume Trend',
-            labels={'Count': 'Total Units Sold'}
-        )
-        st.plotly_chart(fig)
+        st.plotly_chart(fig, width='stretch')
