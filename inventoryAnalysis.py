@@ -61,6 +61,7 @@ monthly_usage = merged.groupby('Month')[
 
 # Clean up column names (remove "_total" suffix for nicer display)
 monthly_usage.columns = [col.replace('_total', '') for col in monthly_usage.columns]
+st.write("Months in monthly_usage:", list(monthly_usage.index))
 
 # to select month and number of ingredients to visualize.
 st.sidebar.header("Filters")
