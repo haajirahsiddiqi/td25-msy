@@ -59,7 +59,7 @@ mai-shan-inventory-dashboard/
 
 Run the main dashboard:
 ```bash
-streamlit run dashboard.py
+streamlit run dash2.py
 ```
 
 The dashboard will open in your browser
